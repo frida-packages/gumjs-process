@@ -10,6 +10,9 @@ export const env = {
   FRIDA_COMPILE: '1',
 };
 export const argv = [];
+export const stdin = { fd: 0, isTTY: false };
+export const stdout = makeStdio(1, console.log);
+export const stderr = makeStdio(2, console.error);
 export const version = Frida.version;
 export const versions = {};
 
@@ -47,6 +50,9 @@ export default {
     pid,
     env,
     argv,
+    stdin,
+    stdout,
+    stderr,
     version,
     versions,
     on,
@@ -68,4 +74,15 @@ export default {
 function detectPlatform() {
     const platform = Process.platform;
     return (platform === 'windows') ? 'win32' : platform;
+}
+
+function makeStdio(fd, log) {
+    return {
+        fd,
+        isTTY: false,
+        write(chunk) {
+            log(String(chunk).replace(/\n$/, ''));
+            return true;
+        },
+    };
 }
